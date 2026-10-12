@@ -20,6 +20,10 @@ Cada aparelho gera um par de chaves Curve25519 na primeira execução. A chave p
 Keychain com `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`: não sincroniza com o iCloud e não
 é restaurada em outro aparelho a partir de um backup.
 
+No Mac, isso vale quando o app é assinado com um Team ID da Apple (o Keychain de proteção de
+dados exige essa assinatura). Em builds sem time, o app usa o Keychain de login: a chave continua
+cifrada e protegida por ACL, mas `ThisDeviceOnly` não se aplica. Para uso real, assine o app.
+
 ### Pareamento
 1. O Mac gera um convite com sua chave pública, um **segredo aleatório de 256 bits** de uso único,
    um nome de serviço Bonjour aleatório e uma validade de 2 minutos. O convite aparece como QR code.
@@ -33,8 +37,14 @@ Keychain com `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`: não sincroniza
    fecha o listener de pareamento.
 
 O QR code é um canal fora da rede: quem está no mesmo Wi‑Fi não vê o segredo e não consegue se
-colocar no meio da conexão. A confirmação no Mac protege contra um app malicioso no iPhone que
-intercepte o link `mellon://`.
+colocar no meio da conexão.
+
+Convites que chegam por um link `mellon://` aberto de fora do app (mensagem, página, câmera do
+sistema) **não são aceitos automaticamente**: o iPhone pede confirmação antes de parear e avisa se
+isso substitui o Mac atual. Sem isso, qualquer pessoa na mesma rede poderia mandar um link para um
+Mac dela, aprovar o pedido do próprio lado e passar a receber o que você digita. O nome do Mac no
+link é informado por quem o gerou e não é verificado. Os QR codes lidos pelo leitor dentro do app
+pareiam direto, porque você acabou de pedir o código no seu Mac.
 
 ### Sessões
 - A chave de sessão é `HKDF(ECDH(chave privada própria, chave pública do par))`, ligada às duas
@@ -53,6 +63,12 @@ intercepte o link `mellon://`.
   do Mac é a autoridade.
 - O app de Mac roda fora do App Sandbox, porque a permissão de Acessibilidade exige isso.
 - Esquecer o Mac no iPhone não revoga o acesso no Mac. Use "Esquecer iPhone" no Mac para isso.
+- A lista fechada impede comandos *pela rede*, mas o iPhone pareado é um teclado e um mouse: ele
+  pode digitar um comando num Terminal aberto e apertar Return. Ter o iPhone pareado equivale a
+  ter acesso ao teclado do Mac.
+- O app do iPhone não tem trava própria (como Face ID). Quem pegar o iPhone desbloqueado consegue
+  controlar o Mac enquanto ele estiver na mesma rede. Use "Pausar controle" ou "Esquecer iPhone"
+  no Mac se perder o aparelho.
 
 ## Como reportar uma vulnerabilidade
 

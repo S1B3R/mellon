@@ -36,7 +36,7 @@ struct OnboardingView: View {
         .sheet(isPresented: $scanning) {
             ScannerSheet { url in
                 scanning = false
-                model.handle(url: url)
+                model.handleScan(url)
             }
         }
     }

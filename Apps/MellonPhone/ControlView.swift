@@ -42,7 +42,7 @@ struct ControlView: View {
         .sheet(isPresented: $scanning) {
             ScannerSheet { url in
                 scanning = false
-                model.handle(url: url)
+                model.handleScan(url)
             }
         }
         .confirmationDialog("Esquecer \(model.pairedMac?.name ?? "Mac")?", isPresented: $confirmingForget, titleVisibility: .visible) {
