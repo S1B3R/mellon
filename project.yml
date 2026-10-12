@@ -1,0 +1,79 @@
+name: Mellon
+options:
+  bundleIdPrefix: app.mellon
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # Set your Apple team ID here (or in Xcode) to run on a device.
+    DEVELOPMENT_TEAM: ""
+
+packages:
+  MellonCore:
+    path: Packages/MellonCore
+
+targets:
+  MellonMac:
+    type: application
+    platform: macOS
+    sources:
+      - Apps/MellonMac
+      - Apps/Shared
+    dependencies:
+      - package: MellonCore
+    settings:
+      base:
+        PRODUCT_NAME: Mellon
+        PRODUCT_BUNDLE_IDENTIFIER: app.mellon.mac
+        # Posting input events needs Accessibility, which the App Sandbox does not allow.
+        ENABLE_APP_SANDBOX: NO
+        ENABLE_HARDENED_RUNTIME: YES
+        GENERATE_INFOPLIST_FILE: NO
+    info:
+      path: Apps/MellonMac/Info.plist
+      properties:
+        CFBundleDisplayName: Mellon
+        LSUIElement: true
+        LSApplicationCategoryType: public.app-category.utilities
+        NSLocalNetworkUsageDescription: O Mellon usa a rede local para receber comandos do seu iPhone pareado.
+        NSBonjourServices:
+          - _mellon._tcp
+          - _mellon-pair._tcp
+
+  MellonPhone:
+    type: application
+    platform: iOS
+    sources:
+      - Apps/MellonPhone
+      - Apps/Shared
+    dependencies:
+      - package: MellonCore
+    settings:
+      base:
+        PRODUCT_NAME: Mellon
+        PRODUCT_BUNDLE_IDENTIFIER: app.mellon.phone
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: NO
+    info:
+      path: Apps/MellonPhone/Info.plist
+      properties:
+        CFBundleDisplayName: Mellon
+        UILaunchScreen: {}
+        UIUserInterfaceStyle: Dark
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSCameraUsageDescription: A câmera é usada só para escanear o código de pareamento exibido no Mac.
+        NSLocalNetworkUsageDescription: O Mellon usa a rede local para encontrar e controlar o seu Mac.
+        NSBonjourServices:
+          - _mellon._tcp
+          - _mellon-pair._tcp
+        CFBundleURLTypes:
+          - CFBundleURLName: app.mellon.pair
+            CFBundleURLSchemes:
+              - mellon
