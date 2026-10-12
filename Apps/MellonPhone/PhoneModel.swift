@@ -20,6 +20,8 @@ final class PhoneModel {
     private(set) var phase: Phase = .unpaired
     private(set) var pairedMac: PairedMac?
     private(set) var macNeedsAccessibility = false
+    /// Invitation from an external link, waiting for the user to confirm it.
+    private(set) var pendingInvitation: PairingInvitation?
     var errorMessage: String?
 
     private let store = KeychainStore(service: "app.mellon.phone")
@@ -61,11 +63,35 @@ final class PhoneModel {
 
     // MARK: Pairing
 
-    func handle(url: URL) {
+    /// A QR code the user scanned inside the app, right after generating it on their Mac.
+    func handleScan(_ url: URL) {
+        guard let invitation = parseInvitation(url) else { return }
+        pair(with: invitation)
+    }
+
+    /// A `mellon://` link opened from outside the app. Anyone can send one (a message, a web page,
+    /// a QR code in the wild), and its Mac name is unverified, so it waits for the user's OK.
+    func handleLink(_ url: URL) {
+        guard let invitation = parseInvitation(url) else { return }
+        pendingInvitation = invitation
+    }
+
+    func confirmPendingInvitation() {
+        guard let invitation = pendingInvitation else { return }
+        pendingInvitation = nil
+        pair(with: invitation)
+    }
+
+    func dismissPendingInvitation() {
+        pendingInvitation = nil
+    }
+
+    private func parseInvitation(_ url: URL) -> PairingInvitation? {
         do {
-            pair(with: try PairingInvitation(url: url))
+            return try PairingInvitation(url: url)
         } catch {
             errorMessage = "Este não é um código do Mellon."
+            return nil
         }
     }
 
